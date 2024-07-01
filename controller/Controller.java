@@ -1,43 +1,62 @@
 package controller;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
+
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import model.Model;
+import view.MainView;
 
 public class Controller {
 
-	public int validInput(String input) {
-		Pattern pt = Pattern.compile("[^0-9A-Fa-f]");
-		Matcher mt = pt.matcher(input);
-		if (!mt.find()) {
-			if (input.length() == 32) {
-				return 1;// valid input
-			} else {
-				return -1;// invalid input length
-			}
-		} else {
-			return -2;// invalid input character
+	public String hashString(String input, String typeHash) {
+		boolean bit192 = false;
+		String res = "";
+		if (typeHash == "128 bit") {
+			typeHash = "MD5";
 		}
-	}
+		if (typeHash == "256 bit") {
+			typeHash = "SHA-256";
+		}
+		if (typeHash == "192 bit") {
+			typeHash = "SHA-256";
+			bit192 = true;
+		}
+		try {
+			MessageDigest digest = MessageDigest.getInstance(typeHash);
+			byte[] hash = digest.digest(input.getBytes());
+			StringBuilder hexString = new StringBuilder();
+			for (byte b : hash) {
+				String hex = Integer.toHexString(0xff & b);
+				if (hex.length() == 1) {
+					hexString.append('0');
+				}
+				hexString.append(hex);
+			}
+			if (bit192) {
+				for (int i = 0; i < 192 / 4; i++) {
+					res += hexString.toString().charAt(i);
+				}
+				return res;
+			}
 
-	public int validKey(String key) {
-		Pattern pt = Pattern.compile("[^0-9A-Fa-f]");
-		Matcher mt = pt.matcher(key);
-		if (!mt.find()) {
-			switch (key.length()) {
-				case 32:
-					return 1; // 128 bit
-				case 48:
-					return 2; // 196 bit
-				case 64:
-					return 3; // 256 bit
-				default:
-					return -1;// invalid key length
-			}
-		} else {
-			return -2; // invalid key character
+			return hexString.toString();
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
 		}
+		return " ";
 	}
 
 	public String[][] matrix(String input, String[][] arr) {
@@ -57,15 +76,7 @@ public class Controller {
 		return matrix;
 	}
 
-	public int[][] subOrInvSubByte(int rows, int colums, String[][] matrix, int[][] S_BOX, int[][] arr) { // so hang cua
-																											// ma tran,
-																											// so cot
-																											// cua ma
-																											// tran ,
-																											// mang
-																											// String tu
-																											// controller.matrix,
-																											// S_BOX
+	public int[][] subOrInvSubByte(int rows, int colums, String[][] matrix, int[][] S_BOX, int[][] arr) {
 		int[][] res = new int[rows][colums];
 		Model m = new Model();
 		for (int i = 0; i < rows; i++) {
@@ -78,10 +89,7 @@ public class Controller {
 		return res;
 	}
 
-	public int[][] subOrInvSubByte(String[][] matrix, String[][] S_BOX, String[][] arr) { // so hang cua ma tran, so cot
-																							// cua ma tran , mang String
-																							// tu controller.matrix,
-																							// S_BOX
+	public int[][] subOrInvSubByte(String[][] matrix, String[][] S_BOX, String[][] arr) {
 		int[][] res = new int[4][4];
 		Model m = new Model();
 		for (int i = 0; i < 4; i++) {
@@ -308,7 +316,6 @@ public class Controller {
 			String oneByte = res.substring(i, i + 4);
 			res1 += m.binaryToHexKey(oneByte);
 		}
-
 		return res1;
 	}
 
@@ -324,6 +331,102 @@ public class Controller {
 			}
 		}
 		return res;
+	}
+
+	public String textToHex(String text) {
+		String res = "";
+		StringBuilder hexBuilder = new StringBuilder();
+		for (char character : text.toCharArray()) {
+			hexBuilder.append(String.format("%02X", (int) character)); // trả về byte <-> 1 ký tự tương ứng với 1 byte
+		}
+		res += hexBuilder;
+		int lessLength = 16 - ((res.length() / 2) % 16);
+		if (text.length() % 16 == 0) {
+			lessLength = 0;
+		}
+		if (lessLength > 0) {
+			for (int i = 0; i < lessLength; i++) {
+				res += "0";
+				res += Integer.toHexString(lessLength);
+			}
+		}
+		Model.paddingInput = lessLength;
+		Model.loops = res.length() / 32;
+		Model.inputHex = res;
+		System.out.println("text to hex : " + res);
+		return res;
+	}
+
+	public String hexToText(String hexStr) {
+		StringBuilder output = new StringBuilder("");
+		for (int i = 0; i < hexStr.length(); i += 2) {
+			String str = hexStr.substring(i, i + 2);
+			output.append((char) Integer.parseInt(str, 16));
+		}
+		return output.toString();
+	}
+
+	public String hexToText2(String hexString) {
+		String[] hexArray = hexString.split(" ");
+		StringBuilder unicodeBuilder = new StringBuilder();
+
+		for (String hex : hexArray) {
+			if (!hex.isEmpty()) {
+				try {
+					int hexValue = Integer.parseInt(hex, 16);
+					unicodeBuilder.append((char) hexValue);
+				} catch (NumberFormatException e) {
+					// Handle invalid hex values if needed
+					System.err.println("Invalid hex value: " + hex);
+				}
+			}
+		}
+
+		return unicodeBuilder.toString();
+	}
+
+	public String base64ToText(String base64String) {
+		byte[] bytes = Base64.getDecoder().decode(base64String);
+		return new String(bytes);
+	}
+
+	public String textToBase64(String textString) {
+		byte[] bytes = textString.getBytes();
+		return Base64.getEncoder().encodeToString(bytes);
+	}
+
+	public String readFileByPath(String pathFile) {
+		Path filePath = Paths.get(pathFile);
+		String fileContent = "";
+
+		try {
+			byte[] bytes = Files.readAllBytes(filePath);
+			fileContent = new String(bytes, StandardCharsets.UTF_8);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return fileContent;
+	}
+
+	public void saveToFile(String content, MainView view) {
+		JFileChooser fileChooser = new JFileChooser();
+		fileChooser.setDialogTitle("Save File");
+
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("Text Files", "txt");
+		fileChooser.setFileFilter(filter);
+
+		int userSelection = fileChooser.showSaveDialog(view);
+
+		if (userSelection == JFileChooser.APPROVE_OPTION) {
+			File fileToSave = fileChooser.getSelectedFile();
+			try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileToSave))) {
+				writer.write(content);
+				JOptionPane.showMessageDialog(view, "File saved successfully!");
+			} catch (IOException ex) {
+				JOptionPane.showMessageDialog(view, "Error saving file: " + ex.getMessage(), "Error",
+						JOptionPane.ERROR_MESSAGE);
+			}
+		}
 	}
 
 }

@@ -1,145 +1,198 @@
 package view;
 
-import java.awt.Color;
-
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JRadioButton;
-import java.awt.Font;
-import java.awt.Image;
-import java.awt.Toolkit;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.net.URL;
-import java.util.ArrayList;
-
-import javax.swing.ButtonGroup;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JTextField;
-import model.Model;
+import javax.swing.*;
+import java.awt.*;
 
 public class MainView extends JFrame {
-	public JRadioButton checkBox0 = new JRadioButton("encode 🔒", true);
-	public JRadioButton checkBox1 = new JRadioButton("decode 🔑", false);
-	public ButtonGroup btnGr = new ButtonGroup();
-	public JLabel typeLb = new JLabel("Encode 🔒");
-	public JTextField input = new JTextField();
-	public JTextField res = new JTextField();
-	public JLabel inputLb = new JLabel("input 📖");
-	public JLabel resLb = new JLabel("result ⚙️");
-	public JLabel validInput = new JLabel("valid input: ");
-	public JLabel validKey = new JLabel("valid key: ");
-	public JLabel keyLb = new JLabel("key 🗝️");
-	public JLabel spLb = new JLabel("support all AES-128 , AES-192 , AES-256 : ");
-	public JTextField key = new JTextField();
-	public JButton btn = new JButton("Submit");
-
-	public Image createImg(String fileName) {
-		URL url = MainView.class.getResource(fileName);
-		return Toolkit.getDefaultToolkit().createImage(url);
-	}
-
-	public ImageIcon createImgIcon(String fileName) {
-		URL url = MainView.class.getResource(fileName);
-		return new ImageIcon(url);
-	}
+	public JTextArea plainTextArea = new JTextArea(5, 20); // đầu vào bản rõ
+	public JButton fileButton1 = new JButton("File"); // mở file mã hóa
+	public JTextField keyField1 = new JTextField(20); // text key mã hóa
+	String[] hashAlgorithms = { "128 bit", "192 bit", "256 bit" };
+	public JComboBox<String> hashComboBox1 = new JComboBox<>(hashAlgorithms); // selection kiểu băm key mã hóa
+	public JButton encryptButton = new JButton("Mã hóa"); // nút mã hóa
+	public JTextArea encryptedTextArea = new JTextArea(5, 20); // kết quả sau mã hóa
+	public JButton saveButton1 = new JButton("lưu"); // lưu kết quả sau mã hóa
+	public JButton transferButton = new JButton("chuyển tiếp"); // nút chuyển tiếp
+	public JTextArea encryptedDataTextArea = new JTextArea(5, 20); // đầu vào giải mã
+	public JButton fileButton2 = new JButton("File");// chọn file để giải mã
+	public JTextField keyField2 = new JTextField(20); // khóa cho giải mã
+	public JComboBox<String> hashComboBox2 = new JComboBox<>(hashAlgorithms); // selection kiểu băm key mã hóa
+	public JButton decryptButton = new JButton("Giải mã"); // nút giải mã
+	public JTextArea decryptedDataTextArea = new JTextArea(5, 20); // kết quả sau giải mã
+	public JButton saveButton2 = new JButton("lưu"); // lưu file sau giải mã
 
 	public MainView() {
-		super("Encode and decode 🔑 AES");
-		this.setContentPane(new JLabel(this.createImgIcon("hacker4.jpg")));
-
-		this.checkBox0.setBounds(20, 20, 100, 30);
-		this.checkBox0.setBackground(Color.YELLOW);
-		this.checkBox0.addItemListener(new ItemListener() {
-			@Override
-			public void itemStateChanged(ItemEvent e) {
-				if (e.getStateChange() == ItemEvent.SELECTED) {
-					Model.state = true;
-					typeLb.setText("Encode 🔒");
-					typeLb.setForeground(Color.RED);
-					typeLb.setBackground(Color.GREEN);
-				}
-
-			}
-		});
-		this.checkBox1.setBounds(120, 20, 100, 30);
-		this.checkBox1.setBackground(Color.YELLOW);
-		this.checkBox1.addItemListener(new ItemListener() {
-			@Override
-			public void itemStateChanged(ItemEvent e) {
-				if (e.getStateChange() == ItemEvent.SELECTED) {
-					Model.state = false;
-					typeLb.setText("decode 🔑 ");
-					typeLb.setForeground(Color.YELLOW);
-					typeLb.setBackground(Color.RED);
-				}
-			}
-		});
-
-		this.btnGr.add(checkBox0);
-		this.btnGr.add(checkBox1);
-
-		this.typeLb.setFont(new Font("Serif", Font.PLAIN, 40));
-		this.typeLb.setBounds(930, -50, 1000, 150);
-		this.typeLb.setForeground(Color.RED);
-		this.typeLb.setBackground(Color.GREEN);
-
-		this.input.setBounds(20, 100, 1000, 100);
-		this.res.setBounds(20, 550, 1000, 100);
-
-		this.inputLb.setFont(new Font("Serif", Font.PLAIN, 30));
-		this.inputLb.setBounds(1050, 80, 100, 100);
-		this.inputLb.setForeground(Color.YELLOW);
-
-		this.resLb.setBounds(1050, 550, 200, 100);
-		this.resLb.setFont(new Font("Serif", Font.PLAIN, 30));
-		this.resLb.setForeground(Color.YELLOW);
-
-		this.validInput.setFont(new Font("Serif", Font.PLAIN, 30));
-		this.validInput.setBounds(1050, 130, 500, 100);
-		this.validInput.setForeground(Color.YELLOW);
-
-		this.validKey.setFont(new Font("Serif", Font.PLAIN, 30));
-		this.validKey.setBounds(1050, 330, 500, 100);
-		this.validKey.setForeground(Color.YELLOW);
-
-		this.keyLb.setFont(new Font("Serif", Font.PLAIN, 30));
-		this.keyLb.setBounds(1050, 280, 100, 100);
-		this.keyLb.setForeground(Color.YELLOW);
-
-		this.spLb.setFont(new Font("Serif", Font.PLAIN, 30));
-		this.spLb.setBounds(370, -50, 1000, 150);
-		this.spLb.setForeground(Color.YELLOW);
-
-		this.key.setBounds(20, 300, 1000, 100);
-
-		this.btn.setBounds(20, 700, 100, 40);
-		this.btn.setBackground(Color.ORANGE);
-
-		this.setIconImage(this.createImg("iconLock.png"));
-
-		this.setLayout(null);
-		this.setVisible(true);
+		// Tạo frame chính
+		super("Mã Hóa và giải mã AES");
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		this.setSize(1350, 830);
-		this.getContentPane().setBackground(Color.PINK);
-		this.setLocationRelativeTo(null);
+		this.setSize(1000, 600);
 
-		this.add(this.checkBox0);
-		this.add(this.checkBox1);
-		this.add(this.typeLb);
-		this.add(this.input);
-		this.add(this.res);
-		this.add(this.inputLb);
-		this.add(this.resLb);
-		this.add(this.validInput);
-		this.add(this.validKey);
-		this.add(this.keyLb);
-		this.add(this.spLb);
-		this.add(this.key);
-		this.add(this.btn);
+		// Tạo panel chính với layout GridBagLayout
+		JPanel panel = new JPanel(new GridBagLayout());
+		GridBagConstraints c = new GridBagConstraints();
+
+		// Tạo font lớn hơn
+		Font font = new Font("Arial", Font.PLAIN, 16);
+
+		// Panel mã hóa
+		JPanel encryptPanel = new JPanel(new GridBagLayout());
+		encryptPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "Mã Hóa"));
+		((javax.swing.border.TitledBorder) encryptPanel.getBorder()).setTitleColor(Color.RED);
+
+		// Panel giải mã
+		JPanel decryptPanel = new JPanel(new GridBagLayout());
+		decryptPanel
+				.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "Giải mã"));
+		((javax.swing.border.TitledBorder) decryptPanel.getBorder()).setTitleColor(Color.BLUE);
+
+		// Các thành phần cho panel mã hóa
+		c.insets = new Insets(10, 10, 10, 10);
+		c.fill = GridBagConstraints.HORIZONTAL;
+
+		c.gridx = 0;
+		c.gridy = 0;
+		c.gridwidth = 1;
+		c.anchor = GridBagConstraints.WEST;
+		JLabel plainTextLabel = new JLabel("bản rõ:");
+		plainTextLabel.setFont(font);
+		encryptPanel.add(plainTextLabel, c);
+
+		c.gridx = 1;
+		c.gridy = 0;
+		c.gridwidth = 2;
+		plainTextArea.setFont(font);
+		encryptPanel.add(new JScrollPane(plainTextArea), c);
+
+		c.gridx = 3;
+		c.gridy = 0;
+		c.gridwidth = 1;
+		fileButton1.setFont(font);
+		encryptPanel.add(fileButton1, c);
+
+		c.gridx = 0;
+		c.gridy = 1;
+		c.gridwidth = 1;
+		JLabel keyLabel1 = new JLabel("khóa:");
+		keyLabel1.setFont(font);
+		encryptPanel.add(keyLabel1, c);
+
+		c.gridx = 1;
+		c.gridy = 1;
+		c.gridwidth = 2;
+		keyField1.setFont(font);
+		encryptPanel.add(keyField1, c);
+
+		c.gridx = 3;
+		c.gridy = 1;
+
+		encryptPanel.add(hashComboBox1, c);
+
+		c.gridx = 1;
+		c.gridy = 2;
+		c.gridwidth = 2;
+		encryptButton.setFont(font);
+		encryptPanel.add(encryptButton, c);
+
+		c.gridx = 0;
+		c.gridy = 3;
+		c.gridwidth = 1;
+		JLabel encryptedResultLabel = new JLabel("kết quả:");
+		encryptedResultLabel.setFont(font);
+		encryptPanel.add(encryptedResultLabel, c);
+
+		c.gridx = 1;
+		c.gridy = 3;
+		c.gridwidth = 2;
+		encryptedTextArea.setFont(font);
+		encryptPanel.add(new JScrollPane(encryptedTextArea), c);
+
+		c.gridx = 0;
+		c.gridy = 4;
+		c.gridwidth = 1;
+		saveButton1.setFont(font);
+		encryptPanel.add(saveButton1, c);
+
+		c.gridx = 1;
+		c.gridy = 4;
+		c.gridwidth = 2;
+		transferButton.setFont(font);
+		encryptPanel.add(transferButton, c);
+
+		// Các thành phần cho panel giải mã
+		c.insets = new Insets(10, 10, 10, 10);
+		c.fill = GridBagConstraints.HORIZONTAL;
+
+		c.gridx = 0;
+		c.gridy = 0;
+		c.gridwidth = 1;
+		JLabel encryptedTextLabel = new JLabel("bản mã:");
+		encryptedTextLabel.setFont(font);
+		decryptPanel.add(encryptedTextLabel, c);
+
+		c.gridx = 1;
+		c.gridy = 0;
+		c.gridwidth = 2;
+		encryptedDataTextArea.setFont(font);
+		decryptPanel.add(new JScrollPane(encryptedDataTextArea), c);
+
+		c.gridx = 3;
+		c.gridy = 0;
+		fileButton2.setFont(font);
+		decryptPanel.add(fileButton2, c);
+
+		c.gridx = 0;
+		c.gridy = 1;
+		c.gridwidth = 1;
+		JLabel keyLabel2 = new JLabel("khóa:");
+		keyLabel2.setFont(font);
+		decryptPanel.add(keyLabel2, c);
+
+		c.gridx = 1;
+		c.gridy = 1;
+		c.gridwidth = 2;
+		keyField2.setFont(font);
+		decryptPanel.add(keyField2, c);
+
+		c.gridx = 3;
+		c.gridy = 1;
+		decryptPanel.add(hashComboBox2, c);
+
+		c.gridx = 1;
+		c.gridy = 2;
+		c.gridwidth = 2;
+		decryptButton.setFont(font);
+		decryptPanel.add(decryptButton, c);
+
+		c.gridx = 0;
+		c.gridy = 3;
+		c.gridwidth = 1;
+		JLabel decryptedResultLabel = new JLabel("kết quả:");
+		decryptedResultLabel.setFont(font);
+		decryptPanel.add(decryptedResultLabel, c);
+
+		c.gridx = 1;
+		c.gridy = 3;
+		c.gridwidth = 2;
+		decryptedDataTextArea.setFont(font);
+		decryptPanel.add(new JScrollPane(decryptedDataTextArea), c);
+
+		c.gridx = 1;
+		c.gridy = 4;
+		c.gridwidth = 1;
+		saveButton2.setFont(font);
+		decryptPanel.add(saveButton2, c);
+
+		// Thêm panel mã hóa và giải mã vào frame chính
+		c.gridx = 0;
+		c.gridy = 0;
+		panel.add(encryptPanel, c);
+
+		c.gridx = 1;
+		c.gridy = 0;
+		panel.add(decryptPanel, c);
+
+		this.getContentPane().add(panel);
+		this.setVisible(true);
 
 	}
 
